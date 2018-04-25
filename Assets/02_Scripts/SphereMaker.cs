@@ -4,16 +4,17 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class SphereMaker : MonoBehaviour
 {
-    [SerializeField]
-    float radius = 1f;
+    public float radius = 1f;
 
     [SerializeField]
     int m_longtitude = 24;
     [SerializeField]
     int m_latitude = 16;
+    [HideInInspector]
+    public int animateSpeed = 100;
 
-    [SerializeField]
-    int offset = 0;
+    public bool canBeAnimated = true;
+
 
     private void Update()
     {
@@ -44,7 +45,11 @@ public class SphereMaker : MonoBehaviour
                 float sin2 = Mathf.Sin(a2);
                 float cos2 = Mathf.Cos(a2);
 
-                vertices[lon + lat * (m_longtitude + 1) + 1] = new Vector3(sin1 * cos2, cos1, sin1 * sin2) * radius;
+                float noiseR = radius;
+                if (canBeAnimated)
+                    noiseR = radius + Mathf.Abs(Perlin.Noise((float)lat * Time.time / animateSpeed, (float)lon * Time.time / animateSpeed));
+
+                vertices[lon + lat * (m_longtitude + 1) + 1] = new Vector3(sin1 * cos2, cos1, sin1 * sin2) * noiseR;
             }
         }
         vertices[vertices.Length - 1] = Vector3.up * -radius;

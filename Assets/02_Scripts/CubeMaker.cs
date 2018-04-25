@@ -6,7 +6,6 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter))]
 public class CubeMaker : MonoBehaviour
 {
-
     public Vector3 size = Vector3.one;
 
     MeshCreator mc = new MeshCreator();
@@ -16,29 +15,37 @@ public class CubeMaker : MonoBehaviour
 
     private float timer = 0;
 
-    public GameObject[,] vfxList = new GameObject[20,20];
+    public GameObject[,] vfxList = new GameObject[50,50];
     public GameObject vfxEffect;
 
+    [HideInInspector]
+    public int row = 20;
+    [HideInInspector]
+    public int col = 20;
+    [HideInInspector]
+    public float sizeMultiplier = .5f;
+        [HideInInspector]
+    public float oriHeight = 1;
+    [HideInInspector]
+    public int animateSpeed = 10;
+    [HideInInspector]
+    public float distance = 1.2f;
 
     private void Start()
     {
-        if (animateVFX)
+        for (int i = 0; i < 50; i++)
         {
-            for (int row = 0; row < 20; row++)
+            for (int j = 0; j < 50; j++)
             {
-                for (int col = 0; col < 20; col++)
-                {
-                    GameObject temp = Instantiate(vfxEffect, new Vector3(col * size.x * (float)1.2, 0, row * size.z * (float)1.2), Quaternion.Euler(-90, 0, 0));
-                    temp.name = "VFX_Row_" + row + "_Col_" + col;
-                    temp.transform.parent = GameObject.Find("VFXList").transform;
-                    vfxList[row, col] = temp;
+                GameObject temp = Instantiate(vfxEffect, new Vector3(j * size.x * (float)distance, 0, i * size.z * (float)distance), Quaternion.Euler(-90, 0, 0));
+                temp.name = "VFX_Row_" + i + "_Col_" + j;
+                temp.transform.parent = GameObject.Find("VFXList").transform;
+                vfxList[i, j] = temp;
 
-                    if (vfxList[row, col].GetComponent<ParticleSystem>())
-                        vfxList[row, col].GetComponent<ParticleSystem>().Stop();
-                }
+                if (vfxList[i, j].GetComponent<ParticleSystem>())
+                    vfxList[i, j].GetComponent<ParticleSystem>().Stop();
             }
         }
-
     }
 
     // Update is called once per frame
@@ -50,12 +57,18 @@ public class CubeMaker : MonoBehaviour
 
         mc.Clear(); // Clear internal lists and mesh
 
-        for (int row = 0; row < 20; row++)
+
+
+        for (int i = 0; i < row; i++)
         {
-            for (int col = 0; col < 20; col++)
+            for (int j = 0; j < col; j++)
             {
-                center.Set(col * size.x * (float)1.2, 0, row * size.z * (float)1.2);
-                CreateCube(center, center.x, center.z, row, col);
+                center.Set(j * size.x * (float)distance, 
+                    0, 
+                    i * size.z * (float)distance);
+
+                vfxList[i, j].transform.position = new Vector3(j * size.x * (float)distance, 0, i * size.z * (float)distance);
+                CreateCube(center, center.x, center.z, i, j);
             }
         }
 
@@ -65,14 +78,14 @@ public class CubeMaker : MonoBehaviour
 
     void CreateCube(Vector3 center, float x, float z, int row, int col)
     {
-        Vector3 cubeSize = size * 0.5f;
-
+        Vector3 cubeSize = size * sizeMultiplier;
+        
         float heightInc = 0;
 
         if (!canBeAnimated)
             heightInc = .9f * Perlin.Noise(x/10, z/10);
         else
-            heightInc = .9f * Perlin.Noise(x+1 , (z+1) * Time.realtimeSinceStartup/10);
+            heightInc = .9f * Perlin.Noise(x+1 , (z+1) * Time.realtimeSinceStartup/animateSpeed);
 
         // heightInc = Mathf.Clamp(Perlin.Noise(x , z * Time.realtimeSinceStartup), 0.05f, 0.2f);
 
@@ -94,18 +107,31 @@ public class CubeMaker : MonoBehaviour
             }
         }
 
-        // top of the cube
-        // t0 is top left point
-        Vector3 t0 = new Vector3(center.x + cubeSize.x, center.y + heightInc, center.z - cubeSize.z);
-        Vector3 t1 = new Vector3(center.x - cubeSize.x, center.y + heightInc, center.z - cubeSize.z);
-        Vector3 t2 = new Vector3(center.x - cubeSize.x, center.y + heightInc, center.z + cubeSize.z);
-        Vector3 t3 = new Vector3(center.x + cubeSize.x, center.y + heightInc, center.z + cubeSize.z);
-        // bottom of the cube
-        Vector3 b0 = new Vector3(center.x + cubeSize.x, center.y - cubeSize.y, center.z - cubeSize.z);
-        Vector3 b1 = new Vector3(center.x - cubeSize.x, center.y - cubeSize.y, center.z - cubeSize.z);
-        Vector3 b2 = new Vector3(center.x - cubeSize.x, center.y - cubeSize.y, center.z + cubeSize.z);
-        Vector3 b3 = new Vector3(center.x + cubeSize.x, center.y - cubeSize.y, center.z + cubeSize.z);
+            // top of the cube
+            // t0 is top left point
+            Vector3 t0 = new Vector3(center.x + cubeSize.x, center.y + heightInc * oriHeight, center.z - cubeSize.z);
+            Vector3 t1 = new Vector3(center.x - cubeSize.x, center.y + heightInc * oriHeight, center.z - cubeSize.z);
+            Vector3 t2 = new Vector3(center.x - cubeSize.x, center.y + heightInc * oriHeight, center.z + cubeSize.z);
+            Vector3 t3 = new Vector3(center.x + cubeSize.x, center.y + heightInc * oriHeight, center.z + cubeSize.z);
+            // bottom of the cube
+            Vector3 b0 = new Vector3(center.x + cubeSize.x, center.y - cubeSize.y, center.z - cubeSize.z);
+            Vector3 b1 = new Vector3(center.x - cubeSize.x, center.y - cubeSize.y, center.z - cubeSize.z);
+            Vector3 b2 = new Vector3(center.x - cubeSize.x, center.y - cubeSize.y, center.z + cubeSize.z);
+            Vector3 b3 = new Vector3(center.x + cubeSize.x, center.y - cubeSize.y, center.z + cubeSize.z);
 
+        if (center.y + heightInc * oriHeight < 0)
+        {
+            t0 = new Vector3(center.x + cubeSize.x, center.y, center.z - cubeSize.z);
+            t1 = new Vector3(center.x - cubeSize.x, center.y, center.z - cubeSize.z);
+            t2 = new Vector3(center.x - cubeSize.x, center.y, center.z + cubeSize.z);
+            t3 = new Vector3(center.x + cubeSize.x, center.y, center.z + cubeSize.z);
+
+            b0 = new Vector3(center.x + cubeSize.x, center.y - cubeSize.y + heightInc * oriHeight, center.z - cubeSize.z);
+            b1 = new Vector3(center.x - cubeSize.x, center.y - cubeSize.y + heightInc * oriHeight, center.z - cubeSize.z);
+            b2 = new Vector3(center.x - cubeSize.x, center.y - cubeSize.y + heightInc * oriHeight, center.z + cubeSize.z);
+            b3 = new Vector3(center.x + cubeSize.x, center.y - cubeSize.y + heightInc * oriHeight, center.z + cubeSize.z);
+
+        }
         // Top square
         mc.BuildTriangle(t0, t1, t2);
         mc.BuildTriangle(t0, t2, t3);
