@@ -4,4 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/01_Scenes/Main.unity
+    guid: 47e079f156e8c20449c345978faea5a5
+  - enabled: 1
+    path: Assets/01_Scenes/AudioNoise.unity
+    guid: 8ab6d8bcebdb1fc4980cd82bdea45021
+  m_configObjects: {}
